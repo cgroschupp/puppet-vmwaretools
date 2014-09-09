@@ -157,7 +157,6 @@ class vmwaretools (
 
   if $::is_virtual == 'true' and $::virtual == 'vmware' and $::kernel == 'Linux' {
 
-    notify{$::vmwaretools_version: }
     if $::vmwaretools_version == undef {
       fail 'vmwaretools_version fact not present, please check your pluginsync configuraton.'
     }
