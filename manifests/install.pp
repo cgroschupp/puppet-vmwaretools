@@ -19,7 +19,7 @@ class vmwaretools::install {
 
   include vmwaretools::install::package
 
-  if $vmwaretools::params::deploy_files == true {
+  if $vmwaretools::deploy_files == true {
     include vmwaretools::install::archive
     include vmwaretools::install::exec
 

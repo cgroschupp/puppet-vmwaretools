@@ -10,13 +10,13 @@ function check_exec {
   fi
 }
 
-DOWNLOAD_URL="<%= scope.lookupvar('vmwaretools::archive_url') %>/VMwareTools-<%= scope.lookupvar('vmwaretools::version') %>.tar.gz"
-DOWNLOAD_LOCATION="<%= scope.lookupvar('vmwaretools::working_dir') %>/VMwareTools-<%= scope.lookupvar('vmwaretools::version') %>.tar.gz"
-GOOD_CHECKSUM="<%= scope.lookupvar('vmwaretools::archive_md5') %>"
+DOWNLOAD_URL="<%= @archive_url %>/VMwareTools-<%= @version %>.tar.gz"
+DOWNLOAD_LOCATION="<%= @working_dir %>/VMwareTools-<%= @version %>.tar.gz"
+GOOD_CHECKSUM="<%= @archive_md5 %>"
 
 check_exec "/usr/bin/curl"
 check_exec "/usr/bin/md5sum"
-check_exec "<%= scope.lookupvar('vmwaretools::params::awk_path') %>"
+check_exec "<%= @awk_path %>"
 
 /usr/bin/curl -s ${DOWNLOAD_URL} -o ${DOWNLOAD_LOCATION}
 if [ $? -gt 0 ]; then
@@ -26,7 +26,7 @@ fi
 
 chmod 600 ${DOWNLOAD_LOCATION}
 
-DOWNLOADED_CHECKSUM=$(/usr/bin/md5sum ${DOWNLOAD_LOCATION} | <%= scope.lookupvar('vmwaretools::params::awk_path') %> '{ print $1 }')
+DOWNLOADED_CHECKSUM=$(/usr/bin/md5sum ${DOWNLOAD_LOCATION} | <%= @awk_path%> '{ print $1 }')
 
 if [ "${DOWNLOADED_CHECKSUM}" != "${GOOD_CHECKSUM}" ]; then
   echo "Checksum mismatch. Got ${DOWNLOADED_CHECKSUM}, should have been ${GOOD_CHECKSUM} -- removing downloaded archive." >&2

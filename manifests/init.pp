@@ -22,6 +22,14 @@
 #   pre-compiled kernel modules.
 #   Default: false (boolean)
 #
+# [*redhat_devel_package*]
+#   Name of the redhat devel Package
+#   Default: Operating system dependent (string)
+#
+# [*awk_path*]
+#   Path to the awk binary
+#   Default: Operating system dependent (string)
+#
 # [*archive_url*]
 #   Specify an HTTP location to download the archive from - this is useful when
 #   you want to avoid packaging the installer with your Puppet code.  NOTE that
@@ -52,6 +60,16 @@
 #   strings) or undef (literal). Booleans will either enable or disable
 #   synchronisation, and undef will disable management of timesync altogether.
 #   Default: undef (UNDEFINED)
+#
+# [*purge_packages_list*]
+#   A list of packets to be removed.
+#   Default: ['open-vm-tools', 'open-vm-dkms', 'vmware-tools-services', 'vmware-tools-foundation', 'open-vm-tools-desktop'] (array)
+#
+# [*purge_packages_mode*]
+#   Specify the ensure value in the package provider for the purge_package_list.
+#   The value purged  also removes the dependencies of the packages.
+#   Acceptable values are absent or purged.
+#   Default: absent
 #
 # == Actions:
 #
@@ -89,16 +107,48 @@
 # Published under the GNU General Public License v3
 #
 class vmwaretools (
-  $version              = '9.0.0-782409',
-  $working_dir          = '/tmp/vmwaretools',
-  $redhat_install_devel = false,
-  $archive_url          = 'puppet',
-  $archive_md5          = '',
-  $fail_on_non_vmware   = false,
-  $keep_working_dir     = false,
-  $prevent_downgrade    = true,
-  $timesync             = undef,
-) {
+  $version              = $::vmwaretools::params::version,
+  $working_dir          = $::vmwaretools::params::working_dir,
+  $redhat_install_devel = $::vmwaretools::params::redhat_install_devel,
+  $redhat_devel_package = $::vmwaretools::params::redhat_devel_package,
+  $awk_path             = $::vmwaretools::params::awk_path,
+  $archive_url          = $::vmwaretools::params::archive_url,
+  $archive_md5          = $::vmwaretools::params::archive_md5,
+  $fail_on_non_vmware   = $::vmwaretools::params::fail_on_non_vmware,
+  $keep_working_dir     = $::vmwaretools::params::keep_working_dir,
+  $prevent_downgrade    = $::vmwaretools::params::prevent_downgrade,
+  $timesync             = $::vmwaretools::params::timesync,
+  $purge_package_list   = $::vmwaretools::params::purge_package_list,
+  $purge_package_mode   = $::vmwaretools::params::purge_package_mode,
+) inherits vmwaretools::params {
+
+  validate_re($purge_package_mode, '^(purged|absent)$',
+  "${ensure} is not supported for ensure.
+  Allowed values are 'present' and 'absent'.")
+
+  if $::vmwaretools_version == 'not installed' {
+    # If nothing is installed, deploy.
+    $deploy_files = true
+  } else {
+
+    # If tools are installed, are we handling downgrades?
+    if $vmwaretools::prevent_downgrade {
+
+      if versioncmp($::vmwaretools_version,$vmwaretools::version) < 0 {
+        # Only deploy if the installed version is **lower than** the Puppet version
+        $deploy_files = true
+      } else {
+        $deploy_files = false
+      }
+
+    } else {
+      # If we're not handling downgrades, deploy on version mismatch
+      $deploy_files = $::vmwaretools_version ? {
+        $vmwaretools::version => false,
+        default               => true,
+      }
+    }
+  }
 
   # Puppet Lint gotcha -- facts are returned as strings, so we should ignore
   # the quoted-boolean warning here. Related links below:
@@ -107,6 +157,7 @@ class vmwaretools (
 
   if $::is_virtual == 'true' and $::virtual == 'vmware' and $::kernel == 'Linux' {
 
+    notify{$::vmwaretools_version: }
     if $::vmwaretools_version == undef {
       fail 'vmwaretools_version fact not present, please check your pluginsync configuraton.'
     }
@@ -125,7 +176,6 @@ class vmwaretools (
       fail 'Ubuntu 13.04 is not supported by this module'
     }
 
-    include vmwaretools::params
     include vmwaretools::install
     include vmwaretools::config
     include vmwaretools::config_tools

@@ -17,7 +17,7 @@
 #
 class vmwaretools::config {
 
-  if $vmwaretools::params::deploy_files {
+  if $vmwaretools::deploy_files {
     file { $vmwaretools::working_dir:
       ensure => directory,
       owner  => 'root',

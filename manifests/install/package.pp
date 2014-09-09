@@ -22,8 +22,8 @@
 #
 class vmwaretools::install::package {
 
-  package { $vmwaretools::params::purge_package_list:
-    ensure => absent,
+  package { $vmwaretools::purge_package_list:
+    ensure => $::vmwaretools::purge_package_mode,
   }
 
   if !defined(Package['perl']) {
@@ -70,8 +70,8 @@ class vmwaretools::install::package {
 
     'RedHat' : {
       if $vmwaretools::redhat_install_devel == true {
-        if ! defined(Package[$vmwaretools::params::redhat_devel_package]) {
-          package{$vmwaretools::params::redhat_devel_package:
+        if ! defined(Package[$vmwaretools::redhat_devel_package]) {
+          package{$vmwaretools::redhat_devel_package:
             ensure => present,
           }
         }

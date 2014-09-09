@@ -18,7 +18,12 @@
 # Published under the GNU General Public License v3
 #
 #
-class vmwaretools::install::archive {
+class vmwaretools::install::archive (
+  $archive_url = $::vmwaretools::archive_url,
+  $working_dir = $::vmwaretools::working_dir,
+  $version     = $::vmwaretools::version,
+  $awk_path    = $::vmwaretools::awk_path,
+) inherits ::vmwaretools {
 
   file { "${vmwaretools::working_dir}/VMwareTools-${vmwaretools::version}.tar.gz":
     mode    => '0600',
