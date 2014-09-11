@@ -22,8 +22,33 @@
 #
 class vmwaretools::install::package {
 
-  package { $vmwaretools::purge_package_list:
-    ensure => $::vmwaretools::purge_package_mode,
+  define purgePkg {
+    case $::operatingsystem {
+      /(?i:Centos|RedHat|Scientific)/: {
+        exec {
+          "removepackage_${name}":
+            # Do it "manually" because either Puppet RPM handling bad,
+            command => "/usr/bin/yum -y erase ${name}",
+            onlyif  => "/bin/rpm -ql ${name}";
+        }
+      }
+      default: {
+        package {$name:
+          ensure => 'purged',
+        }
+      }
+    }
+  }
+
+  case $vmwaretools::purge_package_mode {
+    'purged': {
+      purgePkg { $vmwaretools::purge_package_list: }
+    }
+    default: {
+      package {$vmwaretools::purge_package_list:
+        ensure => $vmwaretools::purge_package_mode
+      }
+    }
   }
 
   if !defined(Package['perl']) {
