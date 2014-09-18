@@ -29,7 +29,8 @@ class vmwaretools::install::package {
           "removepackage_${name}":
             # Do it "manually" because either Puppet RPM handling bad,
             command => "/usr/bin/yum -y erase ${name}",
-            onlyif  => "/bin/rpm -ql ${name}";
+            onlyif  => "/bin/rpm -ql ${name}",
+            timeout => 900;
         }
       }
       default: {
