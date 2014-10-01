@@ -30,7 +30,7 @@ class vmwaretools::install::package {
             # Do it "manually" because either Puppet RPM handling bad,
             command => "/usr/bin/yum -y erase ${name}",
             onlyif  => "/bin/rpm -ql ${name}",
-            timeout => 900;
+            timeout => 1800;
         }
       }
       default: {
