@@ -28,7 +28,7 @@ class vmwaretools::install::exec {
 
   if $vmwaretools::download_vmwaretools == true {
     exec { 'download_vmwaretools':
-      command => "${vmwaretools::working_dir}/download.sh",
+      command => "bash ${vmwaretools::working_dir}/download.sh",
       require => [Package['curl'],File["${vmwaretools::working_dir}/download.sh"]],
       notify  => Exec['uncompress_vmwaretools'],
     }
@@ -49,7 +49,7 @@ class vmwaretools::install::exec {
       command => "tar -xf ${vmwaretools::working_dir}/VMwareTools-${vmwaretools::version}.tar.gz",
       notify  => Exec['install_vmwaretools'];
     'install_vmwaretools':
-      command => "${vmwaretools::working_dir}/vmware-tools-distrib/vmware-install.pl -d",
+      command => "perl ${vmwaretools::working_dir}/vmware-tools-distrib/vmware-install.pl -d",
       require => Exec['uncompress_vmwaretools'],
       notify  => Exec['clean_vmwaretools'];
     'clean_vmwaretools':
